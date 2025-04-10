@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# This script will try to run with python first, then fall back to python3
+python3 "$0.py" "$@" || python "$0.py" "$@"
