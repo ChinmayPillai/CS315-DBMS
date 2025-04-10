@@ -1,0 +1,41 @@
+GroupAggregate  (cost=702.03..703.98 rows=12 width=278) (actual time=1.984..2.830 rows=18 loops=1)
+  Output: t.rider_id, r.rider_name, r.rider_profile_url, r.phone, string_agg(DISTINCT (t.tour_type)::text, ','::text), max(t.start_time), max(t.end_time), count(DISTINCT CASE WHEN ((((t.tour_type)::text = 'FORWARD'::text) AND t2.is_drop_task) OR (((t.tour_type)::text = 'REVERSE'::text) AND (t2.is_drop_task IS FALSE))) THEN t.tour_id ELSE NULL::integer END), (round(avg(CASE WHEN (t2.trip_rating IS NULL) THEN 0 ELSE t2.trip_rating END), 2))::double precision, sum(t2.cod_amount), count(DISTINCT CASE WHEN ((((t.tour_type)::text = 'FORWARD'::text) AND t2.is_drop_task) OR (((t.tour_type)::text = 'REVERSE'::text) AND (t2.is_drop_task IS FALSE))) THEN t2.trip_id ELSE NULL::integer END), count(CASE WHEN (t2.is_escalated IS TRUE) THEN 1 ELSE NULL::integer END), count(CASE WHEN (((t.tour_type)::text = 'FORWARD'::text) AND t2.is_drop_task AND (t2.payment_type = 'COD'::text)) THEN 1 ELSE NULL::integer END), count(CASE WHEN (((t2.status)::text = 'ACCEPTED'::text) AND ((((t.tour_type)::text = 'FORWARD'::text) AND t2.is_drop_task) OR (((t.tour_type)::text = 'REVERSE'::text) AND (t2.is_drop_task IS FALSE)))) THEN 1 ELSE NULL::integer END), count(CASE WHEN ((t2.is_fake_attempt IS TRUE) AND ((t2.status)::text = ANY ('{STARTED,ONGOING,ONHOLD,CANCELLED}'::text[]))) THEN 1 ELSE NULL::integer END), count(CASE WHEN (((t2.status)::text = ANY ('{STARTED,ONGOING,ONHOLD,ACCEPTED}'::text[])) AND ((((t.tour_type)::text = 'FORWARD'::text) AND t2.is_drop_task) OR (((t.tour_type)::text = 'REVERSE'::text) AND (t2.is_drop_task IS FALSE)))) THEN 1 ELSE NULL::integer END), count(CASE WHEN (((((t.tour_type)::text = 'FORWARD'::text) AND t2.is_drop_task) OR (((t.tour_type)::text = 'REVERSE'::text) AND (t2.is_drop_task IS FALSE))) AND ((t2.status)::text = ANY ('{CANCELLED,LOST}'::text[]))) THEN 1 ELSE NULL::integer END), count(CASE WHEN (((t2.status)::text = 'COMPLETED'::text) AND ((((t.tour_type)::text = 'FORWARD'::text) AND t2.is_drop_task) OR (((t.tour_type)::text = 'REVERSE'::text) AND (t2.is_drop_task IS FALSE)))) THEN 1 ELSE NULL::integer END), count(CASE WHEN (((t.tour_type)::text = 'FORWARD'::text) AND t2.is_drop_task AND (t2.payment_type = 'PREPAID'::text) AND ((t2.status)::text = 'COMPLETED'::text)) THEN 1 ELSE NULL::integer END), count(CASE WHEN (((t.tour_type)::text = 'FORWARD'::text) AND t2.is_drop_task AND (t2.payment_type = 'PREPAID'::text) AND ((t2.status)::text = 'CANCELLED'::text)) THEN 1 ELSE NULL::integer END), count(CASE WHEN (((t.tour_type)::text = 'FORWARD'::text) AND t2.is_drop_task AND (t2.payment_type = 'COD'::text) AND ((t2.status)::text = 'COMPLETED'::text)) THEN 1 ELSE NULL::integer END), count(CASE WHEN (((t.tour_type)::text = 'FORWARD'::text) AND t2.is_drop_task AND (t2.payment_type = 'COD'::text) AND ((t2.status)::text = 'CANCELLED'::text)) THEN 1 ELSE NULL::integer END), max(t.last_activity_time)
+  Group Key: t.rider_id, r.rider_name, r.rider_profile_url, r.phone
+  Buffers: shared hit=1242
+  ->  Sort  (cost=702.03..702.06 rows=12 width=172) (actual time=1.859..1.891 rows=457 loops=1)
+        Output: t.rider_id, r.rider_name, r.rider_profile_url, r.phone, t.tour_type, t.start_time, t.end_time, t2.is_drop_task, t.tour_id, t2.trip_rating, t2.cod_amount, t2.trip_id, t2.is_escalated, t2.payment_type, t2.status, t2.is_fake_attempt, t.last_activity_time
+        Sort Key: t.rider_id, r.rider_name, r.rider_profile_url, r.phone, t.tour_type
+        Sort Method: quicksort  Memory: 111kB
+        Buffers: shared hit=1242
+        ->  Nested Loop  (cost=6.56..701.81 rows=12 width=172) (actual time=0.292..1.497 rows=457 loops=1)
+              Output: t.rider_id, r.rider_name, r.rider_profile_url, r.phone, t.tour_type, t.start_time, t.end_time, t2.is_drop_task, t.tour_id, t2.trip_rating, t2.cod_amount, t2.trip_id, t2.is_escalated, t2.payment_type, t2.status, t2.is_fake_attempt, t.last_activity_time
+              Buffers: shared hit=1242
+              ->  Nested Loop  (cost=6.00..672.59 rows=1 width=138) (actual time=0.278..0.439 rows=37 loops=1)
+                    Output: r.rider_name, r.rider_profile_url, r.phone, t.rider_id, t.tour_type, t.start_time, t.end_time, t.tour_id, t.last_activity_time
+                    Inner Unique: true
+                    Buffers: shared hit=317
+                    ->  Bitmap Heap Scan on public.tour t  (cost=5.72..664.29 rows=1 width=40) (actual time=0.270..0.340 rows=37 loops=1)
+                          Output: t.rider_id, t.tour_type, t.start_time, t.end_time, t.tour_id, t.last_activity_time
+                          Recheck Cond: (t.node_id = 94)
+                          Filter: (((t.created_at)::date = CURRENT_DATE) AND (('(STARTED,ONGOING,ONHOLD,ACCEPTED,COMPLETED,ASSIGNED,CANCELLED,LOST)'::record IS NULL) OR ((t.status)::text = ANY ('{STARTED,ONGOING,ONHOLD,ACCEPTED,COMPLETED,ASSIGNED,CANCELLED,LOST}'::text[]))))
+                          Rows Removed by Filter: 182
+                          Heap Blocks: exact=180
+                          Buffers: shared hit=183
+                          ->  Bitmap Index Scan on combined_pendency_tour_idx  (cost=0.00..5.71 rows=172 width=0) (actual time=0.021..0.022 rows=267 loops=1)
+                                Index Cond: (t.node_id = 94)
+                                Buffers: shared hit=3
+                    ->  Index Scan using rider_rider_id_idx on public.rider r  (cost=0.29..8.30 rows=1 width=102) (actual time=0.002..0.002 rows=1 loops=37)
+                          Output: r.rider_name, r.rider_profile_url, r.phone, r.rider_id
+                          Index Cond: (r.rider_id = t.rider_id)
+                          Buffers: shared hit=134
+              ->  Index Scan using trip_tour_id_idx on public.trip t2  (cost=0.56..28.51 rows=71 width=38) (actual time=0.006..0.026 rows=12 loops=37)
+                    Output: t2.is_drop_task, t2.trip_rating, t2.cod_amount, t2.trip_id, t2.is_escalated, t2.payment_type, t2.status, t2.is_fake_attempt, t2.tour_id
+                    Index Cond: (t2.tour_id = t.tour_id)
+                    Filter: ((t2.status)::text <> 'CLOSED'::text)
+                    Rows Removed by Filter: 2
+                    Buffers: shared hit=925
+Query Identifier: -7041550728208047290
+Planning:
+  Buffers: shared hit=76
+Planning Time: 0.774 ms
+Execution Time: 2.939 ms
