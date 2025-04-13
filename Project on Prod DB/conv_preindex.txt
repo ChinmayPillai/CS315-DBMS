@@ -1,0 +1,39 @@
+Case 1: customer_id == cus_id finds 0 rows
+
+Limit  (cost=3608.89..3608.89 rows=1 width=150) (actual time=14.055..14.056 rows=0 loops=1)
+  ->  Sort  (cost=3608.89..3608.89 rows=1 width=150) (actual time=14.054..14.054 rows=0 loops=1)
+        Sort Key: start_time DESC
+        Sort Method: quicksort  Memory: 25kB
+        ->  Seq Scan on conversations  (cost=0.00..3608.88 rows=1 width=150) (actual time=14.031..14.031 rows=0 loops=1)
+              Filter: ((start_time >= '2025-04-12 15:40:13.976'::timestamp without time zone) AND ((customer_id)::text = '7013506943'::text) AND ((status)::text = 'active'::text))
+              Rows Removed by Filter: 107595
+Planning Time: 0.629 ms
+Execution Time: 14.105 ms
+
+
+
+Case 2: customer_id == cus_id finds rows, start_time >= threshold_time finds 0 rows
+
+Limit  (cost=3608.89..3608.89 rows=1 width=150) (actual time=12.146..12.147 rows=0 loops=1)
+  ->  Sort  (cost=3608.89..3608.89 rows=1 width=150) (actual time=12.145..12.145 rows=0 loops=1)
+        Sort Key: start_time DESC
+        Sort Method: quicksort  Memory: 25kB
+        ->  Seq Scan on conversations  (cost=0.00..3608.88 rows=1 width=150) (actual time=12.140..12.140 rows=0 loops=1)
+              Filter: ((start_time >= '2025-04-12 15:40:13.976'::timestamp without time zone) AND ((customer_id)::text = '8106227375'::text) AND ((status)::text = 'active'::text))
+              Rows Removed by Filter: 107595
+Planning Time: 0.112 ms
+Execution Time: 12.176 ms
+
+
+
+Case 3: matching row found
+
+Limit  (cost=3608.89..3608.89 rows=1 width=150) (actual time=12.801..12.803 rows=1 loops=1)
+  ->  Sort  (cost=3608.89..3608.89 rows=1 width=150) (actual time=12.800..12.801 rows=1 loops=1)
+        Sort Key: start_time DESC
+        Sort Method: quicksort  Memory: 25kB
+        ->  Seq Scan on conversations  (cost=0.00..3608.88 rows=1 width=150) (actual time=12.792..12.793 rows=1 loops=1)
+              Filter: ((start_time >= '2025-04-12 15:40:13.976'::timestamp without time zone) AND ((customer_id)::text = '8106227375'::text) AND ((status)::text = 'active'::text))
+              Rows Removed by Filter: 107596
+Planning Time: 0.105 ms
+Execution Time: 12.830 ms

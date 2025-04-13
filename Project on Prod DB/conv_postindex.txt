@@ -1,0 +1,30 @@
+Case 1: customer_id == cus_id finds 0 rows
+
+Limit  (cost=0.42..8.44 rows=1 width=150) (actual time=1.374..1.375 rows=0 loops=1)
+  ->  Index Scan Backward using conversations_customer_id_start_time_idx on conversations  (cost=0.42..8.44 rows=1 width=150) (actual time=1.373..1.373 rows=0 loops=1)
+        Index Cond: (((customer_id)::text = '8106227375'::text) AND (start_time >= '2025-04-12 15:40:13.976'::timestamp without time zone))
+        Filter: ((status)::text = 'active'::text)
+Planning Time: 0.275 ms
+Execution Time: 1.400 ms
+
+
+
+Case 2: customer_id == cus_id finds rows, start_time >= threshold_time finds 0 rows
+
+Limit  (cost=0.42..8.44 rows=1 width=150) (actual time=0.691..0.692 rows=0 loops=1)
+  ->  Index Scan Backward using conversations_customer_id_start_time_idx on conversations  (cost=0.42..8.44 rows=1 width=150) (actual time=0.690..0.690 rows=0 loops=1)
+        Index Cond: (((customer_id)::text = '8106227375'::text) AND (start_time >= '2025-04-12 15:40:13.976'::timestamp without time zone))
+        Filter: ((status)::text = 'active'::text)
+Planning Time: 0.122 ms
+Execution Time: 0.713 ms
+
+
+
+Case 3: matching row found
+
+Limit  (cost=0.42..8.44 rows=1 width=150) (actual time=0.588..0.589 rows=1 loops=1)
+  ->  Index Scan Backward using conversations_customer_id_start_time_idx on conversations  (cost=0.42..8.44 rows=1 width=150) (actual time=0.587..0.588 rows=1 loops=1)
+        Index Cond: (((customer_id)::text = '8106227375'::text) AND (start_time >= '2025-04-12 15:40:13.976'::timestamp without time zone))
+        Filter: ((status)::text = 'active'::text)
+Planning Time: 0.119 ms
+Execution Time: 0.609 ms

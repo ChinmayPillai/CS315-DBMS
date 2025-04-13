@@ -1,0 +1,26 @@
+Before indexing:
+
+Limit  (cost=1100.44..90084.34 rows=1 width=2726) (actual time=1911.268..2110.189 rows=1 loops=1)
+  ->  Nested Loop  (cost=1100.44..179068.24 rows=2 width=2726) (actual time=1911.267..2110.187 rows=1 loops=1)
+        ->  Gather  (cost=1000.00..177902.54 rows=10 width=122) (actual time=0.387..2102.909 rows=2 loops=1)
+              Workers Planned: 4
+              Workers Launched: 4
+              ->  Parallel Seq Scan on aggregated_prod_desc_data agg_desc  (cost=0.00..176901.54 rows=2 width=122) (actual time=375.280..2011.143 rows=4 loops=5)
+                    Filter: ((word_key = <prod_desc>::text) AND (user_id = <userId>))
+                    Rows Removed by Filter: 961497
+        ->  Foreign Scan on shipment_weight weights  (cost=100.44..116.54 rows=3 width=146) (actual time=3.428..3.428 rows=0 loops=2)
+Planning Time: 5.808 ms
+Execution Time: 2110.622 ms
+
+
+
+POST (md5(word_key), user_id) index:
+
+Limit  (cost=101.00..3142.65 rows=1 width=2726) (actual time=7.988..7.989 rows=1 loops=1)
+  ->  Nested Loop  (cost=101.00..3142.65 rows=1 width=2726) (actual time=7.987..7.987 rows=1 loops=1)
+        ->  Index Scan using aggregated_prod_desc_data_word_key_md5_idx on aggregated_prod_desc_data agg_desc  (cost=0.56..3026.08 rows=1 width=122) (actual time=0.026..0.063 rows=13 loops=1)
+              Index Cond: ((md5(word_key) = '516eabeddad85f18d7e74112241265d0'::text) AND (user_id = <userId>))
+              Filter: (word_key = <prod_desc>::text)
+        ->  Foreign Scan on shipment_weight weights  (cost=100.44..116.54 rows=3 width=146) (actual time=0.467..0.467 rows=0 loops=13)
+Planning Time: 1.725 ms
+Execution Time: 8.184 ms
